@@ -1,0 +1,32 @@
+// Import the sqlite3 module
+var sqlite3 = require('sqlite3').verbose();
+
+// Initialize a new database
+var db = new sqlite3.Database('users.db');
+
+// Create a new table for users
+db.serialize(function() {
+  db.run("CREATE TABLE users (username TEXT, password TEXT)");
+});
+
+// Function to add a new user
+function addUser(username, password) {
+  var stmt = db.prepare("INSERT INTO users VALUES (?, ?)");
+  stmt.run(username, password);
+  stmt.finalize();
+}
+
+// Function to check if a user exists
+function checkUser(username, password) {
+  db.get("SELECT * FROM users WHERE username = ? AND password = ?", [username, password], function(err, row) {
+    if (err) {
+      return console.error(err.message);
+    }
+    return row
+      ? console.log(row.username, row.password)
+      : console.log(`No user found with the username ${username}`);
+  });
+}
+
+// Close the database connection
+db.close();
